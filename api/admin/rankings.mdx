@@ -1,0 +1,178 @@
+---
+title: "Admin rankings API — manage league standings"
+description: "POST /api/admin/ranking adds a team, PUT /api/admin/ranking/:id updates standings, DELETE removes a team. All require an admin Bearer token."
+keywords: ["admin", "rankings", "ranking", "clasificacion", "league", "standings", "FC Cañaveral"]
+---
+
+The rankings admin endpoints let you maintain the league standings table shown on the club website. You can add newly promoted teams, refresh points and positions after each match week, and remove teams that have left the competition. All operations require an admin-scoped Bearer token.
+
+<Warning>
+  All admin endpoints require a Bearer token issued to a user with `rol='admin'`. Requests without a valid admin token will be rejected.
+</Warning>
+
+---
+
+## Add a team to the rankings
+
+```
+POST /api/admin/ranking
+```
+
+Inserts a new team row into the `ranking` table. The `pj` (matches played) and `puntos` (points) fields default to `0` when omitted, making it straightforward to register a team at the start of the season.
+
+### Body parameters
+
+<ParamField body="equipo" type="string" required>
+  Name of the team to add to the standings.
+</ParamField>
+
+<ParamField body="posicion" type="number" required>
+  Current league position (1-indexed). The standings list is ordered by this value ascending.
+</ParamField>
+
+<ParamField body="pj" type="number">
+  Number of matches played. Defaults to `0` when omitted.
+</ParamField>
+
+<ParamField body="puntos" type="number">
+  Total points accumulated. Defaults to `0` when omitted.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Equipo añadido"` on success.
+</ResponseField>
+
+<ResponseField name="id" type="number">
+  The auto-incremented primary key of the newly inserted ranking row.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request POST \
+  --url http://localhost:5000/api/admin/ranking \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "equipo": "FC Cañaveral",
+    "pj": 0,
+    "puntos": 0,
+    "posicion": 1
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Equipo añadido",
+  "id": 8
+}
+```
+
+---
+
+## Update a team's standings
+
+```
+PUT /api/admin/ranking/:id
+```
+
+Updates all ranking fields for an existing team entry. Call this endpoint after each match week to keep the standings current.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the ranking row to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="equipo" type="string" required>
+  Team name. Can be updated to correct a typo or rename a team.
+</ParamField>
+
+<ParamField body="pj" type="number" required>
+  Updated number of matches played.
+</ParamField>
+
+<ParamField body="puntos" type="number" required>
+  Updated total points.
+</ParamField>
+
+<ParamField body="posicion" type="number" required>
+  Updated league position.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Ranking actualizado correctamente"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request PUT \
+  --url http://localhost:5000/api/admin/ranking/8 \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "equipo": "FC Cañaveral",
+    "pj": 10,
+    "puntos": 22,
+    "posicion": 2
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Ranking actualizado correctamente"
+}
+```
+
+---
+
+## Remove a team from the rankings
+
+```
+DELETE /api/admin/ranking/:id
+```
+
+Permanently deletes a team entry from the standings table. This action cannot be undone.
+
+<Warning>
+  Deleting a ranking entry is irreversible. Verify the correct `id` before sending the request.
+</Warning>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the ranking row to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Equipo eliminado"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request DELETE \
+  --url http://localhost:5000/api/admin/ranking/8 \
+  --header 'Authorization: Bearer <token>'
+```
+
+### Example response
+
+```json
+{
+  "message": "Equipo eliminado"
+}
+```

@@ -1,0 +1,257 @@
+---
+title: 'Orders API — place and view orders'
+description: "POST /api/pedidos places a new order and decrements stock. GET /api/pedidos/:user_id lists orders. GET /api/pedidos/detalles/:order_id returns line items."
+keywords: ['orders', 'pedidos', 'checkout', 'order history', 'line items', 'FC Cañaveral', 'API']
+---
+
+The Orders API covers the full order lifecycle: placing a new order, listing past orders for a user, and fetching the individual line items within an order. All three endpoints require a valid JWT bearer token. When an order is placed, product stock is automatically decremented for each item in the cart.
+
+**Base URL:** `http://localhost:5000`
+
+---
+
+## POST /api/pedidos
+
+Creates a new order, inserts one line item per product, and decrements stock for each product purchased. Requires a valid JWT bearer token.
+
+<Warning>
+  Stock is decremented immediately on a successful request. There is no reservation step — ensure the client has verified stock availability before calling this endpoint.
+</Warning>
+
+### Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from `POST /api/login`. Format: `Bearer <token>`.
+</ParamField>
+
+### Request body
+
+<ParamField body="user_id" type="number" required>
+  ID of the user placing the order.
+</ParamField>
+
+<ParamField body="total" type="number" required>
+  Total order value in euros (e.g. `100.00`).
+</ParamField>
+
+<ParamField body="productos" type="array" required>
+  Array of product line items to include in the order.
+  <Expandable title="item properties">
+    <ParamField body="id" type="number" required>
+      Product ID.
+    </ParamField>
+    <ParamField body="quantity" type="number" required>
+      Number of units to purchase.
+    </ParamField>
+    <ParamField body="precio" type="number" required>
+      Unit price at the time of purchase in euros.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string. Value is `"Pedido completo guardado"` on success.
+</ResponseField>
+
+<ResponseField name="pedidoId" type="number">
+  Auto-generated ID of the newly created order.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `401`  | Token is expired or invalid. |
+| `403`  | No token provided. |
+| `500`  | Failed to insert the order or line items. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/pedidos \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "user_id": 3,
+    "total": 100.00,
+    "productos": [
+      { "id": 1, "quantity": 1, "precio": 75.00 },
+      { "id": 3, "quantity": 1, "precio": 15.50 }
+    ]
+  }'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+{
+  "message": "Pedido completo guardado",
+  "pedidoId": 12
+}
+```
+
+---
+
+## GET /api/pedidos/:user_id
+
+Returns all orders placed by a specific user, sorted by date descending (most recent first). Requires a valid JWT bearer token.
+
+### Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from `POST /api/login`. Format: `Bearer <token>`.
+</ParamField>
+
+### Path parameters
+
+<ParamField path="user_id" type="number" required>
+  The numeric ID of the user whose orders to retrieve.
+</ParamField>
+
+### Response
+
+Returns an array of order objects.
+
+<ResponseField name="id" type="number">
+  Unique numeric identifier for the order.
+</ResponseField>
+
+<ResponseField name="user_id" type="number">
+  ID of the user who placed the order.
+</ResponseField>
+
+<ResponseField name="fecha" type="string">
+  Date and time the order was created, in ISO 8601 / MySQL DATETIME format.
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Total value of the order in euros.
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Current status of the order. One of `"pendiente"`, `"pagado"`, or `"enviado"`.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `401`  | Token is expired or invalid. |
+| `403`  | No token provided. |
+| `500`  | Internal server error. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/pedidos/3 \
+  --header 'Authorization: Bearer <token>'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+[
+  {
+    "id": 12,
+    "user_id": 3,
+    "fecha": "2024-04-20T10:35:00.000Z",
+    "total": 100.00,
+    "estado": "pendiente"
+  }
+]
+```
+
+---
+
+## GET /api/pedidos/detalles/:order_id
+
+Returns all line items for a specific order, including the name of each product. Requires a valid JWT bearer token.
+
+### Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from `POST /api/login`. Format: `Bearer <token>`.
+</ParamField>
+
+### Path parameters
+
+<ParamField path="order_id" type="number" required>
+  The numeric ID of the order whose line items to retrieve.
+</ParamField>
+
+### Response
+
+Returns an array of order line item objects.
+
+<ResponseField name="id" type="number">
+  Unique numeric identifier for the line item record.
+</ResponseField>
+
+<ResponseField name="order_id" type="number">
+  ID of the parent order.
+</ResponseField>
+
+<ResponseField name="product_id" type="number">
+  ID of the product.
+</ResponseField>
+
+<ResponseField name="cantidad" type="number">
+  Number of units purchased.
+</ResponseField>
+
+<ResponseField name="precio_unitario" type="number">
+  Unit price at the time of purchase in euros.
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Display name of the product, joined from the products table.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `401`  | Token is expired or invalid. |
+| `403`  | No token provided. |
+| `500`  | Internal server error. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/pedidos/detalles/12 \
+  --header 'Authorization: Bearer <token>'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+[
+  {
+    "id": 1,
+    "order_id": 12,
+    "product_id": 1,
+    "cantidad": 1,
+    "precio_unitario": 75.00,
+    "nombre": "Camiseta Oficial"
+  },
+  {
+    "id": 2,
+    "order_id": 12,
+    "product_id": 3,
+    "cantidad": 1,
+    "precio_unitario": 15.50,
+    "nombre": "Bufanda del Club"
+  }
+]
+```

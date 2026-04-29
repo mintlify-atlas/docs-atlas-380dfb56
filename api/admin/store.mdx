@@ -1,0 +1,311 @@
+---
+title: "Admin store API — manage products"
+description: "POST /api/admin/productos adds a product, PUT updates it, DELETE removes it. GET /api/admin/ventas lists all orders. All require an admin Bearer token."
+keywords: ["admin", "store", "products", "productos", "ventas", "orders", "stock", "FC Cañaveral"]
+---
+
+The store admin endpoints give you full control over the club shop catalogue and order pipeline. You can add, update, and remove products, retrieve the complete order history joined with customer email addresses, and update an order's fulfilment status. All endpoints require an admin-scoped Bearer token.
+
+<Warning>
+  All admin endpoints require a Bearer token issued to a user with `rol='admin'`. Requests without a valid admin token will be rejected.
+</Warning>
+
+---
+
+## Add a product
+
+```
+POST /api/admin/productos
+```
+
+Inserts a new product into the `products` table and makes it immediately available in the public catalogue.
+
+### Body parameters
+
+<ParamField body="nombre" type="string" required>
+  Display name of the product.
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Full description shown on the product detail page.
+</ParamField>
+
+<ParamField body="precio" type="number" required>
+  Unit price in the store's currency.
+</ParamField>
+
+<ParamField body="stock" type="number" required>
+  Initial inventory quantity. Products with fewer than 5 units will appear in the low-stock alert on the admin dashboard.
+</ParamField>
+
+<ParamField body="categoria" type="string" required>
+  Product category (e.g. `"camisetas"`, `"accesorios"`).
+</ParamField>
+
+<ParamField body="imagen_url" type="string" required>
+  Absolute URL or root-relative path to the product image.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Producto añadido"` on success.
+</ResponseField>
+
+<ResponseField name="id" type="number">
+  The auto-incremented primary key of the newly created product row.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request POST \
+  --url http://localhost:5000/api/admin/productos \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "nombre": "Camiseta local 2026",
+    "descripcion": "Camiseta oficial de FC Cañaveral temporada 2026.",
+    "precio": 49.99,
+    "stock": 100,
+    "categoria": "camisetas",
+    "imagen_url": "https://example.com/images/camiseta-local-2026.png"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Producto añadido",
+  "id": 15
+}
+```
+
+---
+
+## Update a product
+
+```
+PUT /api/admin/productos/:id
+```
+
+Replaces all editable fields for an existing product. Use this to update pricing, restock inventory, or change the product image.
+
+<Note>
+  This is a full replacement — supply all fields even if only one has changed.
+</Note>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the product to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="nombre" type="string" required>
+  Updated product name.
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Updated product description.
+</ParamField>
+
+<ParamField body="precio" type="number" required>
+  Updated unit price.
+</ParamField>
+
+<ParamField body="stock" type="number" required>
+  Updated inventory quantity.
+</ParamField>
+
+<ParamField body="categoria" type="string" required>
+  Updated product category.
+</ParamField>
+
+<ParamField body="imagen_url" type="string" required>
+  Updated image URL or path.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Producto actualizado correctamente"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request PUT \
+  --url http://localhost:5000/api/admin/productos/15 \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "nombre": "Camiseta local 2026",
+    "descripcion": "Camiseta oficial de FC Cañaveral temporada 2026 — edición limitada.",
+    "precio": 54.99,
+    "stock": 80,
+    "categoria": "camisetas",
+    "imagen_url": "https://example.com/images/camiseta-local-2026.png"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Producto actualizado correctamente"
+}
+```
+
+---
+
+## Delete a product
+
+```
+DELETE /api/admin/productos/:id
+```
+
+Permanently removes a product from the catalogue. Existing order history referencing the product is unaffected.
+
+<Warning>
+  Deleting a product is irreversible. Verify the correct `id` before sending the request.
+</Warning>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the product to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Producto eliminado correctamente"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request DELETE \
+  --url http://localhost:5000/api/admin/productos/15 \
+  --header 'Authorization: Bearer <token>'
+```
+
+### Example response
+
+```json
+{
+  "message": "Producto eliminado correctamente"
+}
+```
+
+---
+
+## List all orders
+
+```
+GET /api/admin/ventas
+```
+
+Returns the complete order history from the `orders` table, joined with the customer's email address from `users`. Results are sorted by order date descending so the most recent orders appear first.
+
+### Response
+
+Each object in the returned array includes the following fields:
+
+<ResponseField name="id" type="number">
+  Unique order identifier.
+</ResponseField>
+
+<ResponseField name="user_id" type="number">
+  Identifier of the customer who placed the order.
+</ResponseField>
+
+<ResponseField name="fecha" type="string">
+  Timestamp when the order was created.
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Total order value.
+</ResponseField>
+
+<ResponseField name="estado" type="string">
+  Current fulfilment status: `"pendiente"`, `"pagado"`, or `"enviado"`.
+</ResponseField>
+
+<ResponseField name="email" type="string">
+  Email address of the customer, joined from the `users` table.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request GET \
+  --url http://localhost:5000/api/admin/ventas \
+  --header 'Authorization: Bearer <token>'
+```
+
+### Example response
+
+```json
+[
+  {
+    "id": 101,
+    "user_id": 5,
+    "fecha": "2026-04-28T14:32:00.000Z",
+    "total": 104.97,
+    "estado": "enviado",
+    "email": "cliente@example.com"
+  }
+]
+```
+
+---
+
+## Update order status
+
+```
+PUT /api/admin/ventas/:id
+```
+
+Changes the fulfilment status of a specific order.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the order to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="estado" type="string" required>
+  New fulfilment status. Must be one of: `"pendiente"`, `"pagado"`, or `"enviado"`.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Estado actualizado"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request PUT \
+  --url http://localhost:5000/api/admin/ventas/101 \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "estado": "enviado"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Estado actualizado"
+}
+```

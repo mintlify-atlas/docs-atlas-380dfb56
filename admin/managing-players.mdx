@@ -1,0 +1,72 @@
+---
+title: "Managing squad players and statistics"
+description: "Add new players to the FC Cañaveral squad, remove departing players, and update stats including goals, assists, yellow cards, red cards, and dorsal numbers."
+---
+
+The **Plantilla** tab in the admin dashboard is your single point of control for the first-team squad. You can register new signings, keep statistics current throughout the season, and release players who are no longer at the club.
+
+## Viewing the squad
+
+Open the admin dashboard at `/admin` and click the **Plantilla** tab. The table loads all players from `GET /api/jugadores`, showing each player's name, position, dorsal number, goals, assists, yellow cards, and red cards.
+
+## Adding a player
+
+Use the **Fichar Nuevo Jugador** form at the top of the Plantilla tab.
+
+<Steps>
+  <Step title="Fill in the player details">
+    Enter the player's full **name** in the first field. Select a **position** from the dropdown — the available options are Portero, Defensa, Centrocampista, and Delantero. Enter the **dorsal** number you want to assign.
+  </Step>
+  <Step title="Submit the form">
+    Click **Añadir**. The form sends a `POST /api/jugadores` request with `nombre`, `posicion`, `dorsal`, and `team_id` (automatically set to the club's team).
+  </Step>
+  <Step title="Confirm the result">
+    A confirmation message appears when the player is added successfully. The squad table refreshes automatically to show the new entry.
+  </Step>
+</Steps>
+
+### Dorsal uniqueness
+
+Each dorsal number must be unique within the team. If the number you enter is already assigned to another player, the API returns a `400` error and displays a message like:
+
+> El dorsal 9 ya está ocupado.
+
+Choose a different number and try again.
+
+<Warning>
+  Dorsal numbers are validated on the server against the current team. You cannot assign the same number to two players in the same squad.
+</Warning>
+
+## Updating player stats
+
+Every row in the squad table is editable inline. You do not need to open a separate form.
+
+<Steps>
+  <Step title="Locate the player">
+    Find the player you want to update in the table. Each row shows their current values in editable input fields.
+  </Step>
+  <Step title="Edit the fields">
+    Click into any of the following fields and type the new value:
+
+    - **Dorsal** — the player's squad number
+    - **Goles** — goals scored this season
+    - **Asist.** — assists recorded
+    - **Amarillas** — yellow cards received
+    - **Rojas** — red cards received
+  </Step>
+  <Step title="Save the changes">
+    Click **Actualizar** in the player's row. This sends a `PUT /api/admin/jugadores/stats/:id` request with all five fields. A confirmation message appears on success and the table refreshes.
+  </Step>
+</Steps>
+
+<Note>
+  Updating a dorsal number is subject to the same uniqueness check as adding a new player. If the number belongs to a different player you will see an error message. The other stat fields (goals, assists, cards) have no such restriction and can be set to any non-negative integer.
+</Note>
+
+## Deleting a player
+
+To remove a player from the squad, click **Eliminar** in their row. A confirmation dialog asks you to verify the action. Confirm to send `DELETE /api/jugadores/:id`. The player is removed from the database and the table refreshes.
+
+<Warning>
+  Deleting a player is permanent. There is no undo. Make sure you are removing the correct entry before confirming.
+</Warning>

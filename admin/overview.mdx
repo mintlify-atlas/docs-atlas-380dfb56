@@ -1,0 +1,64 @@
+---
+title: "FC Cañaveral admin dashboard overview"
+description: "The FC Cañaveral admin dashboard gives admin users control over players, matches, league standings, store products, and sales from one tabbed interface."
+---
+
+The admin dashboard is the central control panel for FC Cañaveral. From here you can manage every part of the platform — the squad, the match calendar, the league table, the merchandise store, and all customer orders — without leaving a single page.
+
+## Accessing the dashboard
+
+Navigate to `/admin` in your browser after logging in. If your account does not have the `admin` role, you are automatically redirected to the home page — you will not see any admin content.
+
+<Note>
+  Only accounts with `rol = 'admin'` can access the admin dashboard. Standard user accounts are redirected to `/` automatically. If you need admin access, the account must be created with the admin role directly in the database.
+</Note>
+
+The admin session uses a JWT that expires after **30 minutes**. If you see a "Tu sesión ha caducado" alert, log out and log back in to get a fresh session.
+
+## The tabbed interface
+
+The dashboard is organised into five tabs. Clicking a tab loads its data from the API and replaces the content panel below.
+
+| Tab | What you manage |
+|---|---|
+| **Plantilla** | Squad players — add, update stats, remove |
+| **Partidos** | Fixtures — schedule, record results, delete |
+| **Clasificación** | League table — add teams, update standings |
+| **Tienda** | Store products — publish, edit, remove |
+| **Ventas** | Customer orders — view stats, mark as sent |
+
+## Stats summary (Ventas tab)
+
+When you open the **Ventas** tab the dashboard fetches a summary from `GET /api/admin/stats` and displays six metric cards at the top of the page.
+
+| Metric | Description |
+|---|---|
+| `totalRecaudado` | Sum of all order totals in euros |
+| `totalPedidos` | Total number of orders ever placed |
+| `productoEstrella` | Best-selling product by units sold |
+| `stockBajo` | Number of products with fewer than 5 units in stock |
+| `pedidosPendientes` | Orders with status `pendiente` or no status set |
+| `pedidosEnviados` | Orders with status `enviado` |
+
+<Tip>
+  Check **Stock Bajo** regularly. Products with fewer than 5 units show a warning label in the Tienda tab and may block customers from completing purchases if stock reaches zero.
+</Tip>
+
+## Admin sub-sections
+
+Each tab is documented in its own page. Use the cards below to jump directly to the guide for what you need to do.
+
+<CardGroup cols={2}>
+  <Card title="Managing players" icon="person-running" href="/admin/managing-players">
+    Add new players to the squad, update goals and cards, change dorsal numbers, and remove players.
+  </Card>
+  <Card title="Scheduling matches" icon="calendar" href="/admin/managing-matches">
+    Create upcoming fixtures, record final scores, edit match details, and delete entries.
+  </Card>
+  <Card title="Managing the store" icon="bag-shopping" href="/admin/managing-store">
+    Publish products, edit prices and stock, and fulfil customer orders from the Tienda and Ventas tabs.
+  </Card>
+  <Card title="League rankings" icon="trophy" href="/admin/managing-rankings">
+    Add teams to the league table, update points and games played, and set position order.
+  </Card>
+</CardGroup>

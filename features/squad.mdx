@@ -1,0 +1,64 @@
+---
+title: 'Squad roster and player statistics'
+description: 'Browse the FC Cañaveral squad by position, view dorsal numbers, and track individual player stats including goals, assists, and disciplinary records.'
+---
+
+The squad page at `/plantilla` gives you a full view of the FC Cañaveral first-team roster for the current season, organised by position group. Each player card shows the key information you need at a glance — from shirt number to in-season contributions.
+
+## Navigating to the squad
+
+Open the squad page by visiting `/plantilla` from the main navigation. The page loads all registered players for FC Cañaveral and groups them automatically by position.
+
+## Position groups
+
+Players are displayed in four sections, in the order shown below:
+
+<CardGroup cols={2}>
+  <Card title="Goalkeepers" icon="shield">
+    All players registered with the Portero position.
+  </Card>
+  <Card title="Defenders" icon="users">
+    All players registered with the Defensa position.
+  </Card>
+  <Card title="Midfielders" icon="futbol">
+    All players registered with the Centrocampista position.
+  </Card>
+  <Card title="Forwards" icon="bolt">
+    All players registered with the Delantero position.
+  </Card>
+</CardGroup>
+
+A section is only rendered when at least one player occupies that position. If no players are registered for a given position group, that section is hidden automatically.
+
+## Player card layout
+
+Each player is presented as a card with the following information:
+
+| Field | Description |
+|---|---|
+| Dorsal number | Squad shirt number, displayed prominently at the top of the card |
+| Name | Full registered name of the player |
+| Position | Player's position label (e.g. Portero, Defensa) |
+| Goals | Total goals scored this season |
+| Assists | Total assists recorded this season |
+| Yellow cards | Number of yellow cards received |
+| Red cards | Number of red cards received |
+
+<Note>
+Disciplinary totals (yellow and red cards) are tracked alongside performance stats on the same card. Yellow and red card counts are colour-coded to distinguish them visually.
+</Note>
+
+## Stats reference
+
+The statistics shown on each card come directly from the `players` table in the database. The fields are:
+
+- `goles` — goals scored
+- `asistencias` — assists
+- `amarillas` — yellow cards
+- `rojas` — red cards
+
+All values default to `0` for newly registered players and are updated as the season progresses.
+
+<Tip>
+If you manage the squad through the admin panel, any stat update is reflected immediately the next time a visitor loads `/plantilla`.
+</Tip>

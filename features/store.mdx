@@ -1,0 +1,82 @@
+---
+title: 'Official FC Cañaveral merchandise store'
+description: 'Shop for FC Cañaveral official merchandise including kits, accessories, and branded goods. Add items to your cart and complete checkout with your account.'
+---
+
+The FC Cañaveral online store at `/tienda` lets supporters browse and purchase official club merchandise. Products span three categories — clothing, accessories, and branded goods — and your cart persists across browser sessions so you never lose your selection.
+
+## Browsing the store
+
+Navigate to `/tienda` to see the full product catalogue. Items are displayed in a responsive grid, each showing:
+
+- Product image
+- Category badge (e.g. Ropa, Accesorios, Merchandising)
+- Product name and description
+- Price in euros
+- Real-time stock availability
+
+### Product categories
+
+The store carries three product categories:
+
+<CardGroup cols={3}>
+  <Card title="Ropa" icon="shirt">
+    Official kits and apparel, including the home and away strips.
+  </Card>
+  <Card title="Accesorios" icon="bag-shopping">
+    Training equipment and practical accessories such as match balls.
+  </Card>
+  <Card title="Merchandising" icon="star">
+    Branded goods including scarves, flags, and supporter items.
+  </Card>
+</CardGroup>
+
+### Stock indicators
+
+The available quantity for each product is shown directly on the card and updates in real time as you add items to your cart:
+
+- **Green** — stock is available
+- **Amber** — fewer than 5 units remaining
+- **Red / SIN STOCK** — product is out of stock or you have already reached the maximum available quantity in your cart
+
+Out-of-stock products remain visible in the grid but the add-to-cart button is disabled.
+
+## Adding items to your cart
+
+Click **AÑADIR AL CARRITO** on any in-stock product to add one unit. Each subsequent click adds another unit, up to the available stock. The cart is stored in your browser so your selections are preserved if you navigate away or reload the page.
+
+<Tip>
+You can continue browsing and adding products before proceeding to checkout. There is no limit on the number of different products in a single cart.
+</Tip>
+
+## Cart page
+
+Navigate to `/carrito` to review your selection before purchasing. The cart page shows:
+
+- A line item for each product: image, name, unit price, and quantity
+- A line subtotal per product (`price × quantity`)
+- A running **total** for the full order
+
+To remove a product entirely, click **Quitar** on its line item.
+
+If your cart is empty, the page prompts you to return to the store.
+
+## Checkout
+
+When you are ready to place your order, click **FINALIZAR COMPRA** from the cart page.
+
+<Steps>
+  <Step title="Ensure you are logged in">
+    Checkout requires an active account. If you are not logged in, you are redirected to `/login` before the order is submitted. Once authenticated, return to `/carrito` to complete your purchase.
+  </Step>
+  <Step title="Submit your order">
+    Click **FINALIZAR COMPRA**. The order is sent to the server with your user ID, the cart contents, and the total amount.
+  </Step>
+  <Step title="Order confirmed">
+    On success you are redirected to `/confirmacion`, which displays your order ID, the final total, and a summary of the products purchased. Your cart is cleared automatically at this point.
+  </Step>
+</Steps>
+
+<Note>
+If an error occurs during submission, an alert is shown and your cart contents are preserved so you can try again.
+</Note>

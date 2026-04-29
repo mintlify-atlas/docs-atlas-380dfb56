@@ -1,0 +1,166 @@
+---
+title: 'Database schema and data model'
+description: 'FC Cañaveral stores all club data in a MySQL database with eight tables covering users, players, teams, products, orders, and league data.'
+---
+
+The `proyecto_futbol` MySQL database contains eight tables that cover every domain of the platform: club identity, squad management, e-commerce, order processing, match scheduling, and league standings. The schema is defined in `servidor/database.sql` and can be fully initialized with a single import command.
+
+## Tables
+
+### `teams`
+
+Stores each club registered in the platform. FC Cañaveral is seeded as the primary team with `id = 1`.
+
+```sql
+CREATE TABLE teams (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    escudo_url VARCHAR(255),
+    liga VARCHAR(100)
+);
+```
+
+### `users`
+
+Stores registered users. Both `username` and `email` have unique constraints. The `rol` field controls access to admin features.
+
+```sql
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    rol ENUM('admin', 'user') DEFAULT 'user',
+    direccion TEXT
+);
+```
+
+<Warning>
+  Passwords are stored in plain text in the current implementation. This is suitable for local development only. Before deploying to any environment with real users, replace plain-text storage with a hashed approach using a library such as `bcrypt`.
+</Warning>
+
+### `players`
+
+Stores squad members linked to a team. The `team_id` foreign key references `teams(id)` and is set to `NULL` if the team is deleted.
+
+```sql
+CREATE TABLE players (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    posicion VARCHAR(50),
+    dorsal INT,
+    team_id INT,
+    goles INT DEFAULT 0,
+    asistencias INT DEFAULT 0,
+    amarillas INT DEFAULT 0,
+    rojas INT DEFAULT 0,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL
+);
+```
+
+### `products`
+
+Stores items available in the club store.
+
+```sql
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10, 2) NOT NULL,
+    stock INT DEFAULT 0,
+    imagen_url VARCHAR(255),
+    categoria VARCHAR(50)
+);
+```
+
+### `orders`
+
+Stores purchase orders placed by authenticated users. The `estado` field tracks fulfillment progress.
+
+```sql
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(10, 2),
+    estado ENUM('pendiente', 'pagado', 'enviado') DEFAULT 'pendiente',
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+### `order_items`
+
+Stores individual line items for each order. Both foreign keys use `ON DELETE CASCADE` so that line items are removed when their parent order or product is deleted.
+
+```sql
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    cantidad INT,
+    precio_unitario DECIMAL(10, 2),
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+```
+
+### `matches`
+
+Stores match fixtures for the season. The `jugado` flag distinguishes completed results from upcoming fixtures.
+
+```sql
+CREATE TABLE matches (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rival VARCHAR(100),
+    fecha DATETIME,
+    ubicacion VARCHAR(100),
+    goles_local INT DEFAULT 0,
+    goles_visitante INT DEFAULT 0,
+    jugado BOOLEAN DEFAULT FALSE
+);
+```
+
+### `ranking`
+
+Stores the league standings table. Each row represents one team's current position, matches played, and points total.
+
+```sql
+CREATE TABLE ranking (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipo VARCHAR(100) NOT NULL,
+    pj INT DEFAULT 0,
+    puntos INT DEFAULT 0,
+    posicion INT
+);
+```
+
+## Entity relationships
+
+| Table         | References              | On delete      |
+| ------------- | ----------------------- | -------------- |
+| `players`     | `teams(id)`             | SET NULL       |
+| `orders`      | `users(id)`             | —              |
+| `order_items` | `orders(id)`            | CASCADE        |
+| `order_items` | `products(id)`          | CASCADE        |
+
+## Seed data
+
+Running `servidor/database.sql` populates the database with the following initial records for local development:
+
+| Table      | Seeded records                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| `teams`    | 1 team — FC Cañaveral (Liga Local)                                                                 |
+| `players`  | 3 initial players (Luka Modric, Vinicius Jr, Thibaut Courtois) plus a full 20-player squad         |
+| `products` | 3 products — Camiseta Oficial (€75), Balón de Entrenamiento (€25), Bufanda del Club (€15.50)       |
+| `users`    | 1 admin user — `raul@test.com` / `1234` with `rol = 'admin'`                                       |
+| `ranking`  | 10 entries with FC Cañaveral in first place (9 points from 3 games)                                |
+| `matches`  | 9 fixtures — 3 already played (`jugado = TRUE`), 6 upcoming (`jugado = FALSE`)                     |
+
+<Tip>
+  To reset the database to its original seeded state at any time, re-run the import command. The SQL file drops and recreates all tables before inserting fresh data.
+
+  ```bash
+  mysql -u root -p proyecto_futbol < servidor/database.sql
+  ```
+</Tip>

@@ -1,0 +1,70 @@
+---
+title: "Admin stats API — dashboard summary"
+description: "GET /api/admin/stats returns a single object with revenue, order counts, low-stock alerts, pending/shipped order counts, and the top-selling product."
+keywords: ["admin", "stats", "dashboard", "revenue", "orders", "stock", "analytics", "FC Cañaveral"]
+---
+
+The stats endpoint aggregates key operational metrics into a single response, powering the admin dashboard at a glance. It runs several sub-queries in parallel against the `orders` and `products` tables and returns one consolidated object. This endpoint requires an admin-scoped Bearer token.
+
+<Warning>
+  All admin endpoints require a Bearer token issued to a user with `rol='admin'`. Requests without a valid admin token will be rejected.
+</Warning>
+
+## Get dashboard stats
+
+```
+GET /api/admin/stats
+```
+
+Executes a single aggregation query that computes revenue, order volume, inventory alerts, fulfilment breakdowns, and the top-selling product by quantity sold. The response is always a single JSON object — not an array.
+
+<Note>
+  `pedidosPendientes` includes orders where `estado` is `NULL` in addition to orders explicitly set to `'pendiente'`, so newly created orders without a status are counted as pending.
+</Note>
+
+### Response
+
+<ResponseField name="totalRecaudado" type="number">
+  Sum of the `total` column across all rows in the `orders` table. Represents total revenue collected.
+</ResponseField>
+
+<ResponseField name="totalPedidos" type="number">
+  Total count of all orders ever placed, regardless of status.
+</ResponseField>
+
+<ResponseField name="stockBajo" type="number">
+  Count of products in the `products` table where `stock < 5`. Use this to identify items that need restocking.
+</ResponseField>
+
+<ResponseField name="pedidosPendientes" type="number">
+  Count of orders where `estado = 'pendiente'` or `estado IS NULL`.
+</ResponseField>
+
+<ResponseField name="pedidosEnviados" type="number">
+  Count of orders where `estado = 'enviado'`.
+</ResponseField>
+
+<ResponseField name="productoEstrella" type="string">
+  Name of the best-selling product, determined by the highest total quantity across all `order_items` rows.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request GET \
+  --url http://localhost:5000/api/admin/stats \
+  --header 'Authorization: Bearer <token>'
+```
+
+### Example response
+
+```json
+{
+  "totalRecaudado": 4823.50,
+  "totalPedidos": 97,
+  "stockBajo": 3,
+  "pedidosPendientes": 12,
+  "pedidosEnviados": 58,
+  "productoEstrella": "Camiseta local 2026"
+}
+```

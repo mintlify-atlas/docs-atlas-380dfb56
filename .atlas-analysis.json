@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "FC Cañaveral",
+  "projectType": "saas",
+  "projectName": "FC Cañaveral",
+  "projectDescription": "A full-stack football club web application featuring squad management, league standings, match calendar, an official merchandise store, and a role-based admin dashboard.",
   "theme": "palm",
-  "colors": {
-    "primary": "#16a34a",
-    "light": "#dcfce7",
-    "dark": "#14532d"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/raulesteban4/proyecto-futbol-daw"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/raulesteban4/proyecto-futbol-daw"
-    }
-  },
+  "primaryColor": "#16a34a",
+  "lightColor": "#dcfce7",
+  "darkColor": "#14532d",
   "navigation": {
     "tabs": [
       {
@@ -91,5 +79,42 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Squad roster with player stats (goals, assists, cards)",
+    "Match calendar with results and upcoming fixtures",
+    "League standings table",
+    "Official merchandise store with cart and checkout",
+    "JWT-based user authentication and registration",
+    "Role-based access control (admin vs regular user)",
+    "Admin dashboard with tabs for players, matches, rankings, store, and sales",
+    "Order management with status tracking (pending, paid, shipped)",
+    "Automatic stock management on purchase"
+  ],
+  "publicApiSurface": [
+    "GET /api/jugadores",
+    "POST /api/jugadores",
+    "DELETE /api/jugadores/:id",
+    "PUT /api/admin/jugadores/stats/:id",
+    "GET /api/productos",
+    "POST /api/admin/productos",
+    "PUT /api/admin/productos/:id",
+    "DELETE /api/admin/productos/:id",
+    "GET /api/clasificacion",
+    "GET /api/partidos",
+    "PUT /api/admin/partidos/:id",
+    "POST /api/admin/partidos",
+    "DELETE /api/admin/partidos/:id",
+    "PUT /api/admin/ranking/:id",
+    "POST /api/admin/ranking",
+    "DELETE /api/admin/ranking/:id",
+    "POST /api/registro",
+    "POST /api/login",
+    "POST /api/pedidos",
+    "GET /api/pedidos/:user_id",
+    "GET /api/pedidos/detalles/:order_id",
+    "GET /api/admin/ventas",
+    "PUT /api/admin/ventas/:id",
+    "GET /api/admin/stats"
+  ]
 }

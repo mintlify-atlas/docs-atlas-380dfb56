@@ -1,0 +1,85 @@
+---
+title: 'Matches API — fixtures and results'
+description: 'GET /api/partidos returns all matches ordered by date. Each match includes rival, location, date, scores, and whether it has been played.'
+keywords: ['matches', 'fixtures', 'results', 'partidos', 'FC Cañaveral', 'calendar', 'API']
+---
+
+The Matches API provides a complete list of FC Cañaveral's fixtures and results for the season, sorted in ascending date order. The endpoint is public and requires no authentication. Each record includes both scheduling information and — for completed matches — the final score.
+
+**Base URL:** `http://localhost:5000`
+
+---
+
+## GET /api/partidos
+
+Returns all matches ordered by `fecha` ascending (earliest first). No authentication required.
+
+### Response
+
+Returns an array of match objects.
+
+<ResponseField name="id" type="number">
+  Unique numeric identifier for the match.
+</ResponseField>
+
+<ResponseField name="rival" type="string">
+  Name of the opposing team.
+</ResponseField>
+
+<ResponseField name="fecha" type="string">
+  Date and time of the match in ISO 8601 / MySQL DATETIME format (e.g. `"2024-04-20T12:00:00.000Z"`).
+</ResponseField>
+
+<ResponseField name="ubicacion" type="string">
+  Venue name where the match is played (e.g. `"Polideportivo Cañaveral"`).
+</ResponseField>
+
+<ResponseField name="goles_local" type="number">
+  Goals scored by the home side. `0` when the match has not yet been played.
+</ResponseField>
+
+<ResponseField name="goles_visitante" type="number">
+  Goals scored by the away side. `0` when the match has not yet been played.
+</ResponseField>
+
+<ResponseField name="jugado" type="boolean">
+  Indicates whether the match has been played. `false` means the fixture is upcoming; `true` means the result has been recorded.
+</ResponseField>
+
+<Note>
+  When `jugado` is `false`, treat `goles_local` and `goles_visitante` as placeholder zeros rather than a real score.
+</Note>
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/partidos
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+[
+  {
+    "id": 1,
+    "rival": "Rayo Alcorcón",
+    "fecha": "2024-03-15T09:30:00.000Z",
+    "ubicacion": "Polideportivo Cañaveral",
+    "goles_local": 2,
+    "goles_visitante": 0,
+    "jugado": true
+  },
+  {
+    "id": 4,
+    "rival": "CD Móstoles",
+    "fecha": "2024-04-20T10:00:00.000Z",
+    "ubicacion": "Polideportivo Cañaveral",
+    "goles_local": 0,
+    "goles_visitante": 0,
+    "jugado": false
+  }
+]
+```

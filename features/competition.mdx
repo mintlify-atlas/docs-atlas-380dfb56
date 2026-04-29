@@ -1,0 +1,47 @@
+---
+title: 'Match calendar and league standings'
+description: 'Track FC Cañaveral fixtures and results in the match calendar, and follow the league table showing positions, games played, and points for all teams.'
+---
+
+The competition page at `/competicion` is the central hub for following FC Cañaveral throughout the season. It combines the full fixture calendar — both upcoming matches and past results — with a live league standings table showing where every team sits in the division.
+
+## Match calendar
+
+The calendar section is divided into two subsections: upcoming fixtures and recent results.
+
+### Upcoming fixtures
+
+Matches that have not yet been played appear under **Siguientes Encuentros**. Each card shows:
+
+- **Date and time** — day of the week, numeric date, month, and kick-off time
+- **Fixture** — displayed as `FC Cañaveral vs [rival]`
+- **Location** — the venue for the match
+
+### Recent results
+
+Played matches appear under **Resultados Recientes**, shown in reverse chronological order (most recent first). Each result card shows the same date, fixture, and location information, plus the final score displayed as `goals_local – goals_visitante`.
+
+<Info>
+The score badge for played matches uses the `goles_local` and `goles_visitante` fields from the `matches` table. A match is considered played when its `jugado` flag is set to `true`.
+</Info>
+
+## League standings
+
+The standings table lists every team in the division with the following columns:
+
+| Column | Description |
+|---|---|
+| Pos | League position |
+| Equipo | Team name |
+| PJ | Matches played (`pj`) |
+| Pts | Total points (`puntos`) |
+
+<Note>
+FC Cañaveral's row is highlighted in the table with a distinct background and bold text, making it easy to locate the club's current standing at a glance.
+</Note>
+
+The top three positions receive a special visual treatment to indicate promotion or playoff places. The data powering the table comes from the `ranking` table, which stores each team's position, matches played, and points total.
+
+## Page layout
+
+The calendar and standings sit side by side on wide screens and stack vertically on smaller viewports. Both sections load their data on page mount from the `/api/partidos` and `/api/clasificacion` endpoints respectively.

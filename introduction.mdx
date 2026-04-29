@@ -1,0 +1,67 @@
+---
+title: "FC Cañaveral: Football Club Web Platform"
+description: "FC Cañaveral is a full-stack football club web app with squad management, match calendar, league standings, an official store, and an admin dashboard."
+---
+
+FC Cañaveral is a complete web platform for managing and showcasing a local football club. It brings together squad data, competition results, a merchandise store, and user accounts — all in one place. Admins can manage every aspect of the club from a dedicated dashboard, while fans can browse the squad, follow the league calendar, and shop for official merchandise.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Set up the platform and get it running locally in minutes
+  </Card>
+  <Card title="Features" icon="star" href="/features/squad">
+    Explore squad management, competition tracking, and the store
+  </Card>
+  <Card title="Admin Dashboard" icon="gauge" href="/admin/overview">
+    Manage players, matches, rankings, and orders from one place
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/auth">
+    Browse all REST endpoints and authentication details
+  </Card>
+</CardGroup>
+
+## What's included
+
+FC Cañaveral covers every aspect of running a football club's online presence:
+
+<CardGroup cols={2}>
+  <Card title="Squad roster" icon="users" href="/features/squad">
+    View the full player list with positions, dorsal numbers, goals, assists, and card stats
+  </Card>
+  <Card title="Competition calendar" icon="calendar" href="/features/competition">
+    Track upcoming fixtures and browse past results with scores
+  </Card>
+  <Card title="League standings" icon="trophy" href="/features/competition">
+    See the full league table with points and games played
+  </Card>
+  <Card title="Official store" icon="bag-shopping" href="/features/store">
+    Browse and purchase club merchandise with cart and checkout
+  </Card>
+  <Card title="User accounts" icon="circle-user" href="/features/user-accounts">
+    Register, log in, and track your order history
+  </Card>
+  <Card title="Admin panel" icon="screwdriver-wrench" href="/admin/overview">
+    Full CRUD control over players, matches, products, and rankings
+  </Card>
+</CardGroup>
+
+## Get started
+
+<Steps>
+  <Step title="Set up the database">
+    Import `servidor/database.sql` into MySQL to create all tables and seed sample data
+  </Step>
+  <Step title="Start the backend server">
+    Run `npm run dev` inside the `servidor/` directory — the API starts on port 5000
+  </Step>
+  <Step title="Start the frontend">
+    Run `npm run dev` inside the `cliente/` directory — the React app starts on port 5173
+  </Step>
+  <Step title="Log in as admin">
+    Use the seeded admin account (`raul@test.com` / `1234`) to access the admin dashboard
+  </Step>
+</Steps>
+
+<Note>
+  See the [Quickstart guide](/quickstart) for the full setup instructions, including prerequisites and configuration details.
+</Note>

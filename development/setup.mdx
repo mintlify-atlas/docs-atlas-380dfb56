@@ -1,0 +1,109 @@
+---
+title: 'Local development environment setup'
+description: 'Configure a local environment for FC Cañaveral — install dependencies, initialize the MySQL database, and run the Express backend and React frontend.'
+---
+
+This guide walks you through cloning the repository, initializing the `proyecto_futbol` MySQL database, and running both the Express API and the Vite-powered React frontend on your machine.
+
+<Note>
+  The default database credentials in `servidor/index.js` are set to `root` / `Raul@3306`. You must update these values to match your local MySQL installation before starting the server.
+</Note>
+
+## Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+- **Node.js** 18 or later
+- **MySQL** 8 or later
+- **npm** (bundled with Node.js)
+
+## Setup
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the project and navigate into the root directory.
+
+    ```bash
+    git clone https://github.com/raulesteban4/proyecto-futbol-daw.git
+    cd proyecto-futbol-daw
+    ```
+  </Step>
+
+  <Step title="Create the database">
+    Open a MySQL client and create the `proyecto_futbol` database.
+
+    ```sql
+    CREATE DATABASE IF NOT EXISTS proyecto_futbol;
+    ```
+  </Step>
+
+  <Step title="Import the schema and seed data">
+    Run the provided SQL file to create all tables and load the initial seed data.
+
+    ```bash
+    mysql -u root -p proyecto_futbol < servidor/database.sql
+    ```
+
+    This imports all eight tables and populates them with sample data including one admin user, three initial players, three products, ten ranking entries, and nine match fixtures.
+  </Step>
+
+  <Step title="Configure database credentials">
+    Open `servidor/index.js` and update the connection block to match your local MySQL credentials.
+
+    ```js
+    const db = mysql.createConnection({
+      host: 'localhost',
+      user: 'root',          // update if different
+      password: 'Raul@3306', // update to your MySQL password
+      database: 'proyecto_futbol'
+    });
+    ```
+
+    <Warning>
+      Do not commit real credentials to version control. Consider moving these values to a `.env` file using the `dotenv` package, which is already listed as a dependency.
+    </Warning>
+  </Step>
+
+  <Step title="Install and start the backend">
+    Navigate to the `servidor` directory, install dependencies, and start the development server. Nodemon watches for file changes and restarts the process automatically.
+
+    ```bash
+    cd servidor
+    npm install
+    npm run dev
+    ```
+
+    The Express API starts on **http://localhost:5000**. You should see:
+
+    ```
+    Conectado a la base de datos MySQL
+    Servidor corriendo en el puerto 5000
+    ```
+  </Step>
+
+  <Step title="Install and start the frontend">
+    In a separate terminal, navigate to the `cliente` directory, install dependencies, and start the Vite dev server.
+
+    ```bash
+    cd cliente
+    npm install
+    npm run dev
+    ```
+
+    The React app is available at **http://localhost:5173**.
+  </Step>
+</Steps>
+
+## Seeded admin credentials
+
+The database seed includes a pre-created admin account you can use to access the `/admin` panel immediately after setup.
+
+| Field    | Value          |
+| -------- | -------------- |
+| Email    | raul@test.com  |
+| Password | 1234           |
+| Role     | admin          |
+
+<Tip>
+  To run production builds, use `npm run start` in `servidor` (runs with `node` instead of `nodemon`) and `npm run build` in `cliente` to generate the static Vite output.
+</Tip>

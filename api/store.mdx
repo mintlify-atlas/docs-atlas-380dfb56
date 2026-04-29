@@ -1,0 +1,85 @@
+---
+title: 'Store API — products catalogue'
+description: 'GET /api/productos returns the full product catalogue including name, description, price, stock, category, and image URL for each item.'
+keywords: ['store', 'products', 'catalogue', 'shop', 'merchandising', 'FC Cañaveral', 'API']
+---
+
+The Store API provides a read-only view of the FC Cañaveral online shop catalogue. It returns every product available for purchase, including pricing, stock levels, and media assets. The endpoint is public and does not require authentication.
+
+**Base URL:** `http://localhost:5000`
+
+---
+
+## GET /api/productos
+
+Returns all products in the catalogue. No authentication required.
+
+### Response
+
+Returns an array of product objects.
+
+<ResponseField name="id" type="number">
+  Unique numeric identifier for the product.
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Product name (e.g. `"Camiseta Oficial"`).
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Detailed description of the product.
+</ResponseField>
+
+<ResponseField name="precio" type="number">
+  Unit price in euros, as a decimal (e.g. `75.00`).
+</ResponseField>
+
+<ResponseField name="stock" type="number">
+  Number of units currently available. A value of `0` indicates the item is out of stock.
+</ResponseField>
+
+<ResponseField name="imagen_url" type="string">
+  URL of the product image. May be `null` if no image has been assigned.
+</ResponseField>
+
+<ResponseField name="categoria" type="string">
+  Product category (e.g. `"Ropa"`, `"Accesorios"`, `"Merchandising"`).
+</ResponseField>
+
+<Note>
+  Stock levels reflect real-time availability. Each completed order decrements stock automatically; always check `stock` before rendering a purchase option in your client.
+</Note>
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/productos
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "Camiseta Oficial",
+    "descripcion": "Equipación local 2026",
+    "precio": 75.00,
+    "stock": 50,
+    "imagen_url": null,
+    "categoria": "Ropa"
+  },
+  {
+    "id": 2,
+    "nombre": "Balón de Entrenamiento",
+    "descripcion": "Resistente para césped artificial",
+    "precio": 25.00,
+    "stock": 20,
+    "imagen_url": null,
+    "categoria": "Accesorios"
+  }
+]
+```

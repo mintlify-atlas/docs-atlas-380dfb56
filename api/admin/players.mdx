@@ -1,0 +1,90 @@
+---
+title: "Admin players API — manage squad stats"
+description: "PUT /api/admin/jugadores/stats/:id updates a player's dorsal, goals, assists, yellow cards, and red cards. Requires an admin Bearer token."
+keywords: ["admin", "players", "jugadores", "stats", "dorsal", "goals", "assists", "cards", "FC Cañaveral"]
+---
+
+The players admin endpoint lets you update a squad member's shirt number and match statistics in a single request. Only users authenticated with an admin role can call this endpoint — passing a non-admin token or omitting the header entirely returns an authorization error.
+
+<Warning>
+  All admin endpoints require a Bearer token issued to a user with `rol='admin'`. Requests without a valid admin token will be rejected.
+</Warning>
+
+## Update player stats
+
+```
+PUT /api/admin/jugadores/stats/:id
+```
+
+Updates the dorsal (shirt number), goals, assists, yellow cards, and red cards for a single player. Before writing, the server checks that the requested dorsal is not already assigned to a different player. If another player holds that dorsal, the request is rejected with HTTP 400.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the player to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="dorsal" type="number" required>
+  The shirt number to assign to the player. Must be unique across the squad — the server rejects the request if any other player already holds this dorsal.
+</ParamField>
+
+<ParamField body="goles" type="number" required>
+  Total goals scored by the player.
+</ParamField>
+
+<ParamField body="asistencias" type="number" required>
+  Total assists recorded for the player.
+</ParamField>
+
+<ParamField body="amarillas" type="number" required>
+  Total yellow cards received by the player.
+</ParamField>
+
+<ParamField body="rojas" type="number" required>
+  Total red cards received by the player.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Jugador actualizado correctamente"` on success.
+</ResponseField>
+
+### Error responses
+
+| Status | Cause |
+|--------|-------|
+| `400`  | The requested dorsal is already assigned to another player. |
+| `401`  | Missing or invalid Bearer token. |
+| `403`  | Authenticated user does not have `rol='admin'`. |
+| `500`  | Database error. |
+
+<Note>
+  The dorsal uniqueness check compares against all other players (`id != :id`), so assigning the same dorsal the player already has is always allowed.
+</Note>
+
+### Example request
+
+```bash
+curl --request PUT \
+  --url http://localhost:5000/api/admin/jugadores/stats/7 \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "dorsal": 10,
+    "goles": 12,
+    "asistencias": 5,
+    "amarillas": 2,
+    "rojas": 0
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Jugador actualizado correctamente"
+}
+```

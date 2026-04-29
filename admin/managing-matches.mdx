@@ -1,0 +1,77 @@
+---
+title: "Scheduling and updating match results"
+description: "Create upcoming fixtures, record match results with scores, and update or delete matches from the Partidos tab in the FC Cañaveral admin dashboard."
+---
+
+The **Partidos** tab lets you build and maintain the full match calendar for FC Cañaveral. You can schedule future fixtures, record the final score once a match has been played, and correct or remove any entry at any time.
+
+## The Partidos tab
+
+Open the admin dashboard at `/admin` and click the **Partidos** tab. The table loads all matches from `GET /api/partidos`, ordered by date ascending, with each match showing the rival, date and time, location, and current scoreline.
+
+Every row in the table is fully editable inline — you do not need a separate edit form.
+
+## Scheduling a new fixture
+
+Use the **Programar Nuevo Partido** form at the top of the tab.
+
+<Steps>
+  <Step title="Enter the match details">
+    Fill in the following fields:
+
+    - **Rival** — the name of the opposing team
+    - **Campo / Ubicación** — the ground or venue where the match will be played
+    - **Date and time** — use the date-time picker to set the exact kick-off moment
+  </Step>
+  <Step title="Submit the form">
+    Click **+ Añadir**. The form sends `POST /api/admin/partidos` with `rival`, `fecha`, `ubicacion`, `jugado: false`, and scores initialised to `0 – 0`.
+  </Step>
+  <Step title="Confirm the fixture appears">
+    The table refreshes and the new fixture appears in date order. The match is marked as not yet played.
+  </Step>
+</Steps>
+
+## Recording a match result
+
+After a match has taken place, update the row for that fixture directly in the table.
+
+<Steps>
+  <Step title="Find the match">
+    Locate the fixture in the Partidos table by scrolling to its date.
+  </Step>
+  <Step title="Enter the score">
+    In the **Goles L/V** column, type the local (home) goals in the left input and the visiting (away) goals in the right input.
+  </Step>
+  <Step title="Save the result">
+    Click **Guardar** in the row. This sends `PUT /api/admin/partidos/:id` with the updated scores and sets `jugado = true`, marking the match as played. A confirmation message appears and the table refreshes.
+  </Step>
+</Steps>
+
+<Note>
+  Clicking **Guardar** always sets `jugado = true` regardless of whether you changed the score or only updated other fields. This is the intended behaviour — saving any change to a match marks it as having been played.
+</Note>
+
+## Editing match details
+
+You can update the rival name, date, or location for any match directly in the table without having to delete and recreate the entry.
+
+<Steps>
+  <Step title="Edit the fields in the row">
+    Click into the **Rival**, **Fecha y Hora**, or **Ubicación** field for the match you want to change and type the new value.
+  </Step>
+  <Step title="Save">
+    Click **Guardar**. All fields in the row — rival, date, location, and scores — are submitted together in a single update.
+  </Step>
+</Steps>
+
+<Tip>
+  If you need to reschedule a match without recording a result yet, clear the score fields back to `0` before saving to avoid inadvertently logging a 0–0 result as played.
+</Tip>
+
+## Deleting a match
+
+Click **Borrar** in the row of the match you want to remove. Confirm the prompt to send `DELETE /api/admin/partidos/:id`. The match is permanently removed and the table refreshes.
+
+<Warning>
+  Deleting a match cannot be undone. If you only need to reschedule, edit the date field instead of deleting the entry.
+</Warning>

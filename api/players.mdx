@@ -1,0 +1,211 @@
+---
+title: 'Players API — squad roster endpoints'
+description: 'GET /api/jugadores returns all players. POST /api/jugadores adds a player (auth required). DELETE /api/jugadores/:id removes a player (auth required).'
+keywords: ['players', 'squad', 'roster', 'jugadores', 'FC Cañaveral', 'API']
+---
+
+The Players API lets you read the full squad roster and, for authenticated clients, add or remove players. The `GET` endpoint is public and returns every player across all teams. The `POST` and `DELETE` endpoints require a valid JWT bearer token.
+
+**Base URL:** `http://localhost:5000`
+
+---
+
+## GET /api/jugadores
+
+Returns all players in the database. No authentication required.
+
+### Response
+
+Returns an array of player objects.
+
+<ResponseField name="id" type="number">
+  Unique numeric identifier for the player.
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  Full name of the player.
+</ResponseField>
+
+<ResponseField name="posicion" type="string">
+  Playing position (e.g. `"Portero"`, `"Defensa"`, `"Centrocampista"`, `"Delantero"`).
+</ResponseField>
+
+<ResponseField name="dorsal" type="number">
+  Shirt number worn by the player.
+</ResponseField>
+
+<ResponseField name="team_id" type="number">
+  ID of the team the player belongs to.
+</ResponseField>
+
+<ResponseField name="goles" type="number">
+  Total goals scored this season.
+</ResponseField>
+
+<ResponseField name="asistencias" type="number">
+  Total assists this season.
+</ResponseField>
+
+<ResponseField name="amarillas" type="number">
+  Total yellow cards received this season.
+</ResponseField>
+
+<ResponseField name="rojas" type="number">
+  Total red cards received this season.
+</ResponseField>
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url http://localhost:5000/api/jugadores
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+[
+  {
+    "id": 1,
+    "nombre": "David García",
+    "posicion": "Portero",
+    "dorsal": 1,
+    "team_id": 1,
+    "goles": 0,
+    "asistencias": 0,
+    "amarillas": 1,
+    "rojas": 0
+  }
+]
+```
+
+---
+
+## POST /api/jugadores
+
+Adds a new player to a team. Requires a valid JWT bearer token.
+
+<Note>
+  The dorsal number must be unique within the team. If the chosen number is already taken, the request returns a `400` error.
+</Note>
+
+### Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from `POST /api/login`. Format: `Bearer <token>`.
+</ParamField>
+
+### Request body
+
+<ParamField body="nombre" type="string" required>
+  Full name of the player.
+</ParamField>
+
+<ParamField body="posicion" type="string" required>
+  Playing position (e.g. `"Portero"`, `"Defensa"`, `"Centrocampista"`, `"Delantero"`).
+</ParamField>
+
+<ParamField body="dorsal" type="number" required>
+  Shirt number. Must not already be assigned to another player in the same team.
+</ParamField>
+
+<ParamField body="team_id" type="number" required>
+  ID of the team to assign the player to.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string. Value is `"Jugador fichado!"` on success.
+</ResponseField>
+
+<ResponseField name="id" type="number">
+  Auto-generated ID of the newly created player record.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `400`  | The dorsal number is already taken by another player in the same team. |
+| `401`  | Token is expired or invalid. |
+| `403`  | No token provided. |
+| `500`  | Internal server error. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/jugadores \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "nombre": "Pablo Sarabia",
+    "posicion": "Delantero",
+    "dorsal": 22,
+    "team_id": 1
+  }'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+{
+  "message": "Jugador fichado!",
+  "id": 25
+}
+```
+
+---
+
+## DELETE /api/jugadores/:id
+
+Permanently removes a player by their ID. Requires a valid JWT bearer token.
+
+### Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token obtained from `POST /api/login`. Format: `Bearer <token>`.
+</ParamField>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The numeric ID of the player to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string. Value is `"Jugador eliminado"` on success.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `401`  | Token is expired or invalid. |
+| `403`  | No token provided. |
+| `500`  | Internal server error. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request DELETE \
+  --url http://localhost:5000/api/jugadores/25 \
+  --header 'Authorization: Bearer <token>'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+{
+  "message": "Jugador eliminado"
+}
+```

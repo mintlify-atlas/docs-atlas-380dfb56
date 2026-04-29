@@ -1,0 +1,157 @@
+---
+title: 'Authenticate with the FC Cañaveral API'
+description: 'Register a user account and log in to receive a JWT bearer token. Pass the token in the Authorization header to access protected endpoints.'
+keywords: ['authentication', 'login', 'register', 'JWT', 'bearer token', 'FC Cañaveral']
+---
+
+The FC Cañaveral API uses JSON Web Tokens (JWT) for authentication. Register an account with `POST /api/registro`, then call `POST /api/login` to receive a signed token. Include that token in every request to a protected endpoint using the `Authorization: Bearer <token>` header. Tokens expire after 30 minutes.
+
+**Base URL:** `http://localhost:5000`
+
+---
+
+## POST /api/registro
+
+Creates a new user account. All three fields are required. Returns an error if the username or email is already taken.
+
+### Request body
+
+<ParamField body="username" type="string" required>
+  Unique display name for the account.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Password for the account.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Email address. Must be unique across all accounts.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string. Value is `"Usuario registrado"` on success.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `400`  | One or more fields are missing, or the username or email is already registered. |
+| `500`  | Internal server error. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/registro \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "username": "juanma",
+    "password": "securepass123",
+    "email": "juanma@example.com"
+  }'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+{
+  "message": "Usuario registrado"
+}
+```
+
+---
+
+## POST /api/login
+
+Authenticates a user with their email and password. Returns the user object and a signed JWT token on success.
+
+### Request body
+
+<ParamField body="email" type="string" required>
+  The registered email address.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The account password.
+</ParamField>
+
+### Response
+
+<ResponseField name="user" type="object">
+  Object containing the authenticated user's basic info.
+  <Expandable title="properties">
+    <ResponseField name="id" type="number">
+      Unique numeric identifier for the user.
+    </ResponseField>
+    <ResponseField name="username" type="string">
+      Display name of the user.
+    </ResponseField>
+    <ResponseField name="rol" type="string">
+      Role assigned to the user. Either `"admin"` or `"user"`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  Signed JWT to use as a bearer token in subsequent requests. Expires after 30 minutes.
+</ResponseField>
+
+### Errors
+
+| Status | Cause |
+|--------|-------|
+| `401`  | Email or password is incorrect. |
+| `500`  | Internal server error. |
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:5000/api/login \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "email": "juanma@example.com",
+    "password": "securepass123"
+  }'
+```
+
+</CodeGroup>
+
+**Example response (200)**
+
+```json
+{
+  "user": {
+    "id": 3,
+    "username": "juanma",
+    "rol": "user"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+---
+
+## Using the token
+
+Include the token returned by `/api/login` in the `Authorization` header of every request to a protected endpoint:
+
+```http
+Authorization: Bearer <token>
+```
+
+<Warning>
+  Tokens expire 30 minutes after they are issued. After expiry you must call `/api/login` again to obtain a fresh token.
+</Warning>
+
+### Token error responses
+
+| Status | Cause |
+|--------|-------|
+| `403`  | No token was provided in the request. |
+| `401`  | The token is expired or otherwise invalid. |

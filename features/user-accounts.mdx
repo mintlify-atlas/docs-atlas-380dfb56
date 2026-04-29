@@ -1,0 +1,94 @@
+---
+title: 'User accounts, registration, and order history'
+description: 'Create a FC Cañaveral account to place orders and track purchases. Registered users can view their full order history including itemised purchase details.'
+---
+
+An FC Cañaveral account lets you complete purchases in the store and review every order you have placed. Registration takes a few seconds, and your session is maintained automatically between visits.
+
+## Creating an account
+
+Go to `/registro` to sign up. Fill in the three required fields and submit the form.
+
+<Steps>
+  <Step title="Enter your username">
+    Choose a unique display name. This is the name shown on your profile and in confirmation messages.
+  </Step>
+  <Step title="Enter your email address">
+    Provide a valid email address. Each email can only be registered once.
+  </Step>
+  <Step title="Set a password">
+    Choose a password for your account.
+  </Step>
+  <Step title="Submit the form">
+    Click **REGISTRARSE**. Once registration is successful, you are redirected to `/login` to sign in with your new credentials.
+  </Step>
+</Steps>
+
+<Note>
+If the email address you enter is already registered, you will see an error message and can try a different address or sign in at `/login` instead.
+</Note>
+
+## Signing in
+
+Navigate to `/login` and enter your email address and password, then click **ENTRAR**.
+
+- **Regular users** are redirected to the home page (`/`) after a successful login.
+- **Admin users** are redirected to `/admin` after a successful login.
+
+Your session is stored in the browser. If your session expires while you are using the site, you will be notified and redirected to `/login` to authenticate again.
+
+<Info>
+Sessions are time-limited. You will need to sign in again after the session expires. There is no "remember me" option — this is by design to keep accounts secure.
+</Info>
+
+If you do not have an account yet, the login page includes a link to `/registro`.
+
+## Account roles
+
+Every account has one of two roles:
+
+<CardGroup cols={2}>
+  <Card title="user" icon="user">
+    The default role for all newly registered accounts. Can browse the site, place orders, and view order history.
+  </Card>
+  <Card title="admin" icon="shield">
+    Elevated access. Admin accounts are redirected to the `/admin` dashboard after login and have access to site management tools not available to regular users.
+  </Card>
+</CardGroup>
+
+## Profile and order history
+
+Visit `/perfil` when signed in to view your complete purchase history. The profile page lists all orders associated with your account in a table with the following columns:
+
+| Column | Description |
+|---|---|
+| ID | Unique order number prefixed with `#` |
+| Fecha | Date the order was placed |
+| Total | Order total in euros |
+| Estado | Current order status |
+
+### Order status
+
+Orders can have one of three statuses:
+
+- **pendiente** — order received and awaiting processing
+- **pagado** — payment confirmed
+- **enviado** — order dispatched
+
+### Viewing order details
+
+Click **Ver productos** on any order row to expand an itemised breakdown. Each line shows:
+
+- Product name
+- Quantity purchased
+- Unit price at the time of purchase
+
+Click **Ocultar** to collapse the details for that order.
+
+<Tip>
+If you have not placed any orders yet, the profile page displays a message indicating that your purchase history is empty. Visit `/tienda` to browse available merchandise.
+</Tip>
+
+## Signing out
+
+You can sign out at any time from the navigation bar. Signing out clears your session and cart data from the browser immediately.

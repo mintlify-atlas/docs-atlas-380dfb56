@@ -1,0 +1,198 @@
+---
+title: "Admin matches API — create and update fixtures"
+description: "POST /api/admin/partidos creates a fixture, PUT updates result and details, DELETE removes a match. All require an admin Bearer token."
+keywords: ["admin", "matches", "partidos", "fixtures", "results", "schedule", "FC Cañaveral"]
+---
+
+The matches admin endpoints give you full control over the club's fixture list. You can create new matches before they are played, update results and venue details afterwards, and delete entries that are no longer relevant. All three operations require an admin-scoped Bearer token.
+
+<Warning>
+  All admin endpoints require a Bearer token issued to a user with `rol='admin'`. Requests without a valid admin token will be rejected.
+</Warning>
+
+---
+
+## Create a match
+
+```
+POST /api/admin/partidos
+```
+
+Adds a new fixture to the `matches` table. You may pre-fill scoreline fields for imported historical results or leave them at their defaults (`0` for goals, `false` for played).
+
+### Body parameters
+
+<ParamField body="rival" type="string" required>
+  Name of the opposing team.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  Match date and time in ISO 8601 format (e.g. `"2026-05-10T18:00:00"`).
+</ParamField>
+
+<ParamField body="ubicacion" type="string" required>
+  Venue name or address where the match takes place.
+</ParamField>
+
+<ParamField body="goles_local" type="number">
+  Goals scored by FC Cañaveral. Defaults to `0` when omitted.
+</ParamField>
+
+<ParamField body="goles_visitante" type="number">
+  Goals scored by the visiting team. Defaults to `0` when omitted.
+</ParamField>
+
+<ParamField body="jugado" type="boolean">
+  Whether the match has already been played. Defaults to `false` when omitted.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Partido añadido"` on success.
+</ResponseField>
+
+<ResponseField name="id" type="number">
+  The auto-incremented primary key of the newly created match row.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request POST \
+  --url http://localhost:5000/api/admin/partidos \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "rival": "CD Villarejo",
+    "fecha": "2026-05-10T18:00:00",
+    "ubicacion": "Campo Municipal de Cañaveral",
+    "goles_local": 0,
+    "goles_visitante": 0,
+    "jugado": false
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Partido añadido",
+  "id": 42
+}
+```
+
+---
+
+## Update a match
+
+```
+PUT /api/admin/partidos/:id
+```
+
+Updates all fields for an existing match. Typically used after a match is played to record the final result, but can also correct venue or date information for upcoming fixtures.
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the match to update.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="rival" type="string" required>
+  Name of the opposing team.
+</ParamField>
+
+<ParamField body="fecha" type="string" required>
+  Match date and time in ISO 8601 format.
+</ParamField>
+
+<ParamField body="ubicacion" type="string" required>
+  Venue name or address.
+</ParamField>
+
+<ParamField body="goles_local" type="number" required>
+  Goals scored by FC Cañaveral.
+</ParamField>
+
+<ParamField body="goles_visitante" type="number" required>
+  Goals scored by the opposing team.
+</ParamField>
+
+<ParamField body="jugado" type="boolean" required>
+  Set to `true` once the match has been played.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Partido actualizado correctamente"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request PUT \
+  --url http://localhost:5000/api/admin/partidos/42 \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "rival": "CD Villarejo",
+    "fecha": "2026-05-10T18:00:00",
+    "ubicacion": "Campo Municipal de Cañaveral",
+    "goles_local": 3,
+    "goles_visitante": 1,
+    "jugado": true
+  }'
+```
+
+### Example response
+
+```json
+{
+  "message": "Partido actualizado correctamente"
+}
+```
+
+---
+
+## Delete a match
+
+```
+DELETE /api/admin/partidos/:id
+```
+
+Permanently removes a match record from the database. This action cannot be undone.
+
+<Warning>
+  Deleting a match is irreversible. Confirm the correct `id` before sending the request.
+</Warning>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The unique identifier of the match to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation string `"Partido eliminado con éxito"` on success.
+</ResponseField>
+
+### Example request
+
+```bash
+curl --request DELETE \
+  --url http://localhost:5000/api/admin/partidos/42 \
+  --header 'Authorization: Bearer <token>'
+```
+
+### Example response
+
+```json
+{
+  "message": "Partido eliminado con éxito"
+}
+```

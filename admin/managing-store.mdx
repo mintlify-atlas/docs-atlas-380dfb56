@@ -1,0 +1,101 @@
+---
+title: "Managing the merchandise store"
+description: "Add, edit, and remove products in the FC Cañaveral store, manage stock levels, set prices, and track sales orders from the Tienda and Ventas admin tabs."
+---
+
+The store is managed across two tabs in the admin dashboard: **Tienda** handles the product catalogue and **Ventas** handles customer orders. Together they give you a complete view of what is on sale, how much stock remains, and which orders need to be fulfilled.
+
+## The Tienda tab
+
+Open the admin dashboard at `/admin` and click the **Tienda** tab. The page shows a form to add new products at the top and an **Inventario** table below listing every product currently in the store.
+
+### Adding a product
+
+<Steps>
+  <Step title="Fill in the product form">
+    Complete all required fields in the **Añadir Nuevo Producto** form:
+
+    - **Nombre** — the product name displayed in the store
+    - **Precio (€)** — the selling price; accepts decimals (e.g. `24.99`)
+    - **Stock** — the initial quantity available
+    - **Categoría** — a label used to group products (e.g. `Camisetas`, `Accesorios`)
+    - **URL Imagen** — a full URL pointing to the product image; if left empty a placeholder image is used
+    - **Descripción** — a short description shown on the product page
+  </Step>
+  <Step title="Publish the product">
+    Click **PUBLICAR PRODUCTO**. The form sends `POST /api/admin/productos` with all six fields. The table refreshes and the new product appears immediately.
+  </Step>
+</Steps>
+
+### Editing a product
+
+Every product row in the inventory table is editable inline. You can change the name, category, image URL, description, price, and stock at any time.
+
+<Steps>
+  <Step title="Locate the product">
+    Find the product in the **Gestionar Inventario** table.
+  </Step>
+  <Step title="Update the fields">
+    Click into any editable field — name, category, image URL, description, price, or stock — and type the new value.
+  </Step>
+  <Step title="Save the changes">
+    Click **Guardar** in the product row. This sends `PUT /api/admin/productos/:id` with all six fields. A confirmation message appears on success.
+  </Step>
+</Steps>
+
+### Stock warnings
+
+Products with fewer than **5 units** in stock are highlighted in the table: the stock field turns red and a **¡Reponer!** label appears below it. These same items are counted in the `stockBajo` metric visible in the Ventas tab stats cards.
+
+<Warning>
+  Stock is decremented automatically when a customer completes a purchase. A customer buying 3 units of a product with 4 in stock will leave only 1 remaining. Monitor the stock column and replenish before it reaches zero to avoid blocking purchases.
+</Warning>
+
+### Removing a product
+
+Click **Eliminar** in the product row. Confirm the prompt to send `DELETE /api/admin/productos/:id`. The product is permanently removed from the store and the table refreshes.
+
+<Warning>
+  Deleting a product is irreversible. If you want to temporarily hide a product from customers, reduce its stock to `0` instead of deleting it — this prevents purchases while keeping the product record intact.
+</Warning>
+
+---
+
+## The Ventas tab
+
+Click the **Ventas** tab to see the sales overview. Six metric cards appear at the top of the page followed by the full order table.
+
+### Stats cards
+
+| Card | What it shows |
+|---|---|
+| Recaudación Total | Total revenue across all orders in euros |
+| Producto Estrella | Best-selling product by units sold |
+| Stock Bajo | Number of products with fewer than 5 units remaining |
+| Enviados | Count of orders with status `enviado` |
+| Pendientes | Count of orders with status `pendiente` or no status |
+| Total Histórico | Total number of orders ever placed |
+
+### Viewing and filtering orders
+
+The order table lists every transaction with the order ID, customer email, date, total amount, and current status.
+
+- Use the **search field** to filter orders by customer email or order ID.
+- Toggle **Mostrar: Solo Pendientes** to show only orders that still need to be dispatched.
+
+### Updating order status
+
+When a customer places an order it starts with the status `pendiente`. Once you have dispatched it, mark it as sent.
+
+<Steps>
+  <Step title="Find the pending order">
+    Locate the order in the Ventas table. Orders with status `pendiente` show a **Marcar como Enviado** button in the Acción column.
+  </Step>
+  <Step title="Mark as dispatched">
+    Click **Marcar como Enviado**. This sends `PUT /api/admin/ventas/:id` with `estado: 'Enviado'`. A confirmation message appears and the order status updates in the table.
+  </Step>
+</Steps>
+
+<Tip>
+  Once an order is marked as `enviado` the action button disappears and is replaced with the text "Completado". Orders cannot be moved back to `pendiente` through the UI.
+</Tip>

@@ -1,0 +1,113 @@
+---
+title: 'Platform architecture and technology stack'
+description: 'FC Cañaveral uses a React 19 frontend with Vite and an Express REST API backed by MySQL, with JWT authentication and role-based admin access.'
+---
+
+The FC Cañaveral platform follows a two-tier architecture split into two top-level directories: `cliente` for the browser application and `servidor` for the REST API and database layer. The frontend and backend communicate exclusively over HTTP through a JSON API served at `http://localhost:5000/api/`.
+
+## Technology overview
+
+<CardGroup cols={2}>
+  <Card title="React 19 + Vite 7" icon="react">
+    The frontend is a single-page application built with React 19 and bundled by Vite 7. React Router v7 handles client-side routing.
+  </Card>
+  <Card title="Express 5 + Node.js" icon="node-js">
+    The backend is an Express 5 REST API running on Node.js. Nodemon is used in development for automatic restarts.
+  </Card>
+  <Card title="MySQL 8 + mysql2" icon="database">
+    All data is stored in a MySQL 8 database. The `mysql2` package provides the Node.js driver with a callback-based query API.
+  </Card>
+  <Card title="JWT Authentication" icon="lock">
+    Authentication uses JSON Web Tokens signed with a static secret key. Tokens expire after 30 minutes and are sent via the `Authorization: Bearer` header.
+  </Card>
+</CardGroup>
+
+## Frontend
+
+The `cliente` directory contains the React application. Key dependencies from `cliente/package.json`:
+
+| Package              | Version  | Purpose                          |
+| -------------------- | -------- | -------------------------------- |
+| `react`              | ^19.2.0  | UI rendering                     |
+| `react-router-dom`   | ^7.13.2  | Client-side routing              |
+| `axios`              | ^1.13.6  | HTTP requests to the Express API |
+| `tailwindcss`        | ^4.2.2   | Utility-first CSS styling        |
+| `vite`               | ^7.3.1   | Dev server and build tool        |
+| `react-hot-toast`    | ^2.6.0   | Toast notifications              |
+
+### Routes
+
+All routes are defined in `cliente/src/App.jsx`:
+
+| Path           | Component         | Notes                                         |
+| -------------- | ----------------- | --------------------------------------------- |
+| `/`            | `Home`            | Public landing page                           |
+| `/plantilla`   | `Plantilla`       | Squad list                                    |
+| `/tienda`      | `Tienda`          | Club store                                    |
+| `/carrito`     | `Carrito`         | Shopping cart                                 |
+| `/login`       | `Login`           | Authentication form                           |
+| `/registro`    | `Registro`        | New user registration                         |
+| `/perfil`      | `Perfil`          | Authenticated user profile                    |
+| `/competicion` | `Competicion`     | Match schedule and league standings           |
+| `/admin`       | `AdminDashboard`  | Admin panel — requires `rol === 'admin'`      |
+| `/confirmacion`| `Confirmacion`    | Post-checkout confirmation page               |
+
+### Context providers
+
+The application uses two React context providers:
+
+- **`UserContext`** — holds authenticated user state (id, username, rol) and the JWT token. Set on login, cleared on logout.
+- **`CartContext`** — manages the shopping cart items across the store and checkout flow.
+
+### Admin route guard
+
+The `/admin` route is protected inline in `App.jsx`. If the authenticated user does not have `rol === 'admin'`, the route redirects to `/`.
+
+```jsx
+<Route
+  path="/admin"
+  element={
+    user && user.rol === 'admin' ? (
+      <AdminDashboard />
+    ) : (
+      <Navigate to="/" replace />
+    )
+  }
+/>
+```
+
+## Backend
+
+The `servidor` directory contains the Express application. Key dependencies from `servidor/package.json`:
+
+| Package         | Version  | Purpose                        |
+| --------------- | -------- | ------------------------------ |
+| `express`       | ^5.2.1   | HTTP server and routing        |
+| `mysql2`        | ^3.18.2  | MySQL database driver          |
+| `jsonwebtoken`  | ^9.0.3   | JWT signing and verification   |
+| `cors`          | ^2.8.6   | Cross-origin request handling  |
+| `dotenv`        | ^17.3.1  | Environment variable loading   |
+| `nodemon`       | ^3.1.14  | Dev server auto-restart        |
+
+### API base URL
+
+All endpoints are prefixed with `/api/`. When running locally the full base URL is:
+
+```
+http://localhost:5000/api/
+```
+
+### Authentication flow
+
+1. The client sends `POST /api/login` with `email` and `password`.
+2. The server returns a JWT containing `{ id, rol }`, signed with the server secret, expiring in 30 minutes.
+3. Subsequent requests to protected routes include the token in the `Authorization` header.
+4. The `verificarToken` middleware (in `servidor/auth.js`) validates the header before the route handler runs.
+
+```
+Authorization: Bearer <token>
+```
+
+### Role system
+
+User roles are stored as a MySQL `ENUM('admin', 'user')` in the `users` table. The `rol` field is embedded in the JWT payload and used by both the frontend guard and backend middleware to control access to admin-only routes and endpoints.

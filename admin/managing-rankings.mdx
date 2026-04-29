@@ -1,0 +1,77 @@
+---
+title: "Managing the league classification table"
+description: "Add teams to the league standings, update points and games played, set positions, and remove teams from the Clasificación tab in the admin dashboard."
+---
+
+The **Clasificación** tab in the admin dashboard lets you build and maintain the league table displayed to visitors on the FC Cañaveral site. You control every team's name, games played, points tally, and table position directly from this tab.
+
+## The Clasificación tab
+
+Open the admin dashboard at `/admin` and click the **Clasificación** tab. The table loads all teams from `GET /api/clasificacion`, ordered by the `posicion` field ascending so the league leader appears at the top.
+
+Each row is fully editable inline — no separate modal or form is needed to update an existing entry.
+
+## Adding a team
+
+Use the **Añadir Equipo a la Liga** form at the top of the tab.
+
+<Steps>
+  <Step title="Enter the team details">
+    Fill in the fields in the form:
+
+    - **Nombre del Equipo** — the full name of the club as it should appear in the table (required)
+    - **PJ** — partidos jugados (matches played); defaults to `0` if left empty
+    - **Pts** — points; defaults to `0` if left empty
+    - **Pos** — the table position number used to order the standings
+  </Step>
+  <Step title="Submit the form">
+    Click **+ Añadir**. This sends `POST /api/admin/ranking` with `equipo`, `pj`, `puntos`, and `posicion`. A confirmation message appears and the table refreshes.
+  </Step>
+</Steps>
+
+<Note>
+  The table is sorted by `posicion` ascending on every load. Assign position numbers carefully — if two teams share the same number their order relative to each other is not guaranteed.
+</Note>
+
+## Editing team standings
+
+After match days you will need to update games played, points, and potentially reorder positions.
+
+<Steps>
+  <Step title="Locate the team">
+    Find the team's row in the classification table.
+  </Step>
+  <Step title="Edit the fields">
+    Click into any of the four editable fields and type the updated value:
+
+    - **Equipo** — rename the team if needed
+    - **PJ** — increment by the number of matches played since the last update
+    - **Pts** — enter the new cumulative points total
+    - **Posición** — change the position to reflect the current standings
+  </Step>
+  <Step title="Save the changes">
+    Click **Guardar** in the team's row. This sends `PUT /api/admin/ranking/:id` with all four fields updated. A confirmation message appears and the table reloads with the new order.
+  </Step>
+</Steps>
+
+<Tip>
+  After a match day, update all affected teams before saving any individual row. This way you can review the full picture — points, games played, and positions — before committing, and avoid temporarily inconsistent standings appearing to visitors.
+</Tip>
+
+## How position ordering works
+
+The classification table is always fetched from the database with `ORDER BY posicion ASC`. This means the team with position `1` appears first, `2` second, and so on.
+
+There is no automatic sorting by points. You must manually set the `posicion` field for every team to reflect the correct order after each match day. If you add a new team mid-season, assign it a position number higher than all existing teams and update accordingly as results come in.
+
+<Note>
+  Position numbers are free-form integers. You can skip numbers (e.g. 1, 2, 4, 5) or use them sequentially — the table simply sorts ascending. Consistent sequential numbering starting at `1` is recommended to keep the standings predictable.
+</Note>
+
+## Removing a team from the ranking
+
+Click **Borrar** in the team's row. A confirmation dialog asks you to verify the removal. Confirm to send `DELETE /api/admin/ranking/:id`. The team is permanently deleted from the league table and the table refreshes.
+
+<Warning>
+  Removing a team from the rankings cannot be undone. If the team needs to return later you will have to add it again from scratch. If you only need to temporarily hide a team, consider setting its position to a very high number so it appears at the bottom of the table rather than deleting it.
+</Warning>
